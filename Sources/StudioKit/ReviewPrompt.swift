@@ -49,15 +49,15 @@ public enum ReviewPrompt {
         defaults.set(successes, forKey: Key.successCount)
         defaults.set(moment, forKey: Key.lastMoment)
 
-        let now = now()
+        let today = now()
         let version = appVersion()
         guard successes >= policy.minSuccesses,
               let firstLaunch = defaults.object(forKey: Key.firstLaunch) as? Date,
-              days(from: firstLaunch, to: now) >= policy.minDaysSinceInstall
+              days(from: firstLaunch, to: today) >= policy.minDaysSinceInstall
         else { return false }
 
         if let lastAsk = defaults.object(forKey: Key.lastAsk) as? Date,
-           days(from: lastAsk, to: now) < policy.minDaysBetweenAsks {
+           days(from: lastAsk, to: today) < policy.minDaysBetweenAsks {
             return false
         }
 
@@ -65,7 +65,7 @@ public enum ReviewPrompt {
             ? defaults.integer(forKey: Key.asksThisVersion) : 0
         guard asksThisVersion < policy.maxAsksPerVersion else { return false }
 
-        defaults.set(now, forKey: Key.lastAsk)
+        defaults.set(today, forKey: Key.lastAsk)
         defaults.set(version, forKey: Key.lastAskVersion)
         defaults.set(asksThisVersion + 1, forKey: Key.asksThisVersion)
         StudioKit.track?("review_prompted", ["moment": moment])
