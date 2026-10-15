@@ -41,13 +41,19 @@ public enum ReviewPrompt {
         defaults.set(defaults.integer(forKey: Key.launchCount) + 1, forKey: Key.launchCount)
     }
 
-    /// Call at every success moment. Returns `true` when a prompt should be shown now (and records the ask).
-    @discardableResult
-    public static func recordSuccess(_ moment: String) -> Bool {
+    /// Counts a success moment without ever asking. Use where the screen cannot show the prompt.
+    public static func noteSuccess(_ moment: String) {
         startClockIfNeeded()
-        let successes = defaults.integer(forKey: Key.successCount) + 1
-        defaults.set(successes, forKey: Key.successCount)
+        defaults.set(defaults.integer(forKey: Key.successCount) + 1, forKey: Key.successCount)
         defaults.set(moment, forKey: Key.lastMoment)
+    }
+
+    /// Counts a success moment and returns `true` when the prompt should be shown now.
+    /// A `true` result already records the ask (once per version, 120-day gap), so the caller
+    /// MUST show the prompt; use `noteSuccess(_:)` where it cannot.
+    public static func recordSuccess(_ moment: String) -> Bool {
+        noteSuccess(moment)
+        let successes = defaults.integer(forKey: Key.successCount)
 
         let today = now()
         let version = appVersion()
